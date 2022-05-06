@@ -32,3 +32,6 @@ jobs:
         SCKEY: ${{ secrets.SCKEY }}
       run: |
         mvn compile exec:java -Dexec.mainClass="top.srcrs.Run" -Dexec.args="${BDUSS} ${SCKEY}"
+
+    - name: Keepalive Workflow
+      uses: gautamkrishnar/keepalive-workflow@1.0.7
