@@ -36,4 +36,4 @@ jobs:
         mvn compile exec:java -Dexec.mainClass="top.srcrs.Run" -Dexec.args="${BDUSS} ${SCKEY}"
 
     - name: Keepalive Workflow
-      uses: gautamkrishnar/keepalive-workflow@v1
+      uses: gautamkrishnar/keepalive-workflow@v2
