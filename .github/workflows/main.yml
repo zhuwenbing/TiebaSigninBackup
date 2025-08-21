@@ -22,7 +22,7 @@ jobs:
         echo "Delaying for $RANDOM_DELAY seconds."
         echo "delay=$RANDOM_DELAY" >> $GITHUB_OUTPUT
         sleep $RANDOM_DELAY  # 延迟执行
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Set up JDK 8
       uses: actions/setup-java@v4
       with:
