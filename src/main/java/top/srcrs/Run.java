@@ -1,7 +1,6 @@
 package top.srcrs;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -65,10 +64,10 @@ public class Run
      */
     public void getTbs(){
         try{
-            JSONObject jsonObject = Request.get(TBS_URL);
-            if("1".equals(jsonObject.getString("is_login"))){
+            JsonNode jsonObject = Request.get(TBS_URL);
+            if("1".equals(jsonObject.path("is_login").asText())){
                 LOGGER.info("获取tbs成功");
-                tbs = jsonObject.getString("tbs");
+                tbs = jsonObject.path("tbs").asText();
             } else{
                 LOGGER.warn("获取tbs失败 -- " + jsonObject);
             }
@@ -84,18 +83,18 @@ public class Run
      */
     public void getFollow(){
         try{
-            JSONObject jsonObject = Request.get(LIKE_URL);
+            JsonNode jsonObject = Request.get(LIKE_URL);
             LOGGER.info("获取贴吧列表成功");
-            JSONArray jsonArray = jsonObject.getJSONObject("data").getJSONArray("like_forum");
+            JsonNode jsonArray = jsonObject.path("data").path("like_forum");
             followNum = jsonArray.size();
             // 获取用户所有关注的贴吧
-            for (Object array : jsonArray) {
-                if("0".equals(((JSONObject) array).getString("is_sign"))){
+            for (JsonNode node : jsonArray) {
+                if("0".equals(node.path("is_sign").asText())){
                     // 将为签到的贴吧加入到 follow 中，待签到
-                    follow.add(((JSONObject) array).getString("forum_name").replace("+","%2B"));
+                    follow.add(node.path("forum_name").asText().replace("+","%2B"));
                 } else{
                     // 将已经成功签到的贴吧，加入到 success
-                    success.add(((JSONObject) array).getString("forum_name"));
+                    success.add(node.path("forum_name").asText());
                 }
             }
         } catch (Exception e){
@@ -121,8 +120,8 @@ public class Run
                     String s = iterator.next();
                     String rotation = s.replace("%2B","+");
                     String body = "kw="+s+"&tbs="+tbs+"&sign="+ Encryption.enCodeMd5("kw="+rotation+"tbs="+tbs+"tiebaclient!!!");
-                    JSONObject post = Request.post(SIGN_URL, body);
-                    if("0".equals(post.getString("error_code"))){
+                    JsonNode post = Request.post(SIGN_URL, body);
+                    if("0".equals(post.path("error_code").asText())){
                         iterator.remove();
                         success.add(rotation);
                         LOGGER.info(rotation + ": " + "签到成功");

@@ -1,6 +1,7 @@
 package top.srcrs.util;
 
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.*;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.CookieSpecs;
@@ -24,16 +25,35 @@ public class Request {
     private static final Logger LOGGER = LoggerFactory.getLogger(Request.class);
     /** 获取Cookie对象 */
     private static Cookie cookie = Cookie.getInstance();
+    /** JSON 解析器 */
+    private static final ObjectMapper MAPPER = new ObjectMapper();
     private Request(){};
+
+    /**
+     * 解析 JSON 响应，空内容返回 null
+     * @param content 响应内容
+     * @return JsonNode
+     */
+    private static JsonNode parse(String content){
+        if(content == null || content.trim().isEmpty()){
+            return null;
+        }
+        try{
+            return MAPPER.readTree(content);
+        } catch (Exception e){
+            LOGGER.error("JSON解析错误 -- " + e);
+            return null;
+        }
+    }
 
     /**
      * 发送get请求
      * @param url 请求的地址，包括参数
-     * @return JSONObject
+     * @return JsonNode
      * @author srcrs
      * @Time 2020-10-31
      */
-    public static JSONObject get(String url){
+    public static JsonNode get(String url){
         RequestConfig defaultConfig = RequestConfig.custom().setCookieSpec(CookieSpecs.STANDARD).build();
         HttpClient client = HttpClients.custom().setDefaultRequestConfig(defaultConfig).build();
 
@@ -57,7 +77,7 @@ public class Request {
         } catch (Exception e){
             LOGGER.info("get请求错误 -- "+e);
         } finally {
-            return JSONObject.parseObject(respContent);
+            return parse(respContent);
         }
     }
 
@@ -65,11 +85,11 @@ public class Request {
      * 发送post请求
      * @param url 请求的地址
      * @param body 携带的参数
-     * @return JSONObject
+     * @return JsonNode
      * @author srcrs
      * @Time 2020-10-31
      */
-    public static JSONObject post(String url , String body){
+    public static JsonNode post(String url , String body){
         StringEntity entityBody = new StringEntity(body,"UTF-8");
         RequestConfig defaultConfig = RequestConfig.custom().setCookieSpec(CookieSpecs.STANDARD).build();
         HttpClient client = HttpClients.custom().setDefaultRequestConfig(defaultConfig).build();
@@ -96,7 +116,7 @@ public class Request {
             LOGGER.info("post请求错误 -- "+e);
         }
         finally {
-            return JSONObject.parseObject(respContent);
+            return parse(respContent);
         }
     }
 }
